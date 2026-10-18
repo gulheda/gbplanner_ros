@@ -511,6 +511,15 @@ bool SensorParamsBase::isFrontier(double num_unknown_voxels_normalized) {
     return false;
 }
 
+bool SensorParamsBase::isFrontier(double num_unknown_voxels_normalized,
+                                  double num_observed_voxels_normalized) {
+  if (num_observed_voxels_normalized <= 0.0)
+    return isFrontier(num_unknown_voxels_normalized);
+  double unknown_percentage =
+      num_unknown_voxels_normalized / num_observed_voxels_normalized;
+  return unknown_percentage >= frontier_percentage_threshold;
+}
+
 bool SensorParams::loadParams(std::string ns) {
   ROSPARAM_INFO("Loading: " + ns);
   std::string param_name;

@@ -4343,7 +4343,9 @@ void Rrg::computeVolumetricGainRayModel(StateVec& state, VolumetricGain& vgain,
 
     // Check if it is a potential frontier.
     if (sensor_params_.sensor[sensor_name].isFrontier(
-            num_unknown_voxels * map_manager_->getResolution())) {
+            num_unknown_voxels * map_manager_->getResolution(),
+            (num_unknown_voxels + num_free_voxels + num_occupied_voxels) *
+                map_manager_->getResolution())) {
       vgain.is_frontier = true;  // Event E2
     }
   }
@@ -4425,7 +4427,9 @@ void Rrg::computeVolumetricGainRayModelNoBound(StateVec& state,
                                        num_occupied_voxels));
     // Check if it is a potential frontier.
     if (sensor_params_.sensor[sensor_name].isFrontier(
-            num_unknown_voxels * map_manager_->getResolution())) {
+            num_unknown_voxels * map_manager_->getResolution(),
+            (num_unknown_voxels + num_free_voxels + num_occupied_voxels) *
+                map_manager_->getResolution())) {
       vgain.is_frontier = true;  // Event E2
     }
   }

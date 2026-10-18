@@ -146,6 +146,12 @@ struct SensorParamsBase {
   // Check if this is potential frontier given sensor FOV.
   // Number of unknow voxels perceived, scaled to map resolution (per meter).
   bool isFrontier(double num_unknown_voxels_normalized);
+  // kesif_drone yamasi: bilinmeyen orani, isinlarin GERCEKTEN gectigi hacme gore
+  // (bilinmeyen / (bilinmeyen + bos + dolu)). Kapali alanlarda (oda, koridor)
+  // isinlar duvarda bittigi icin sabit 'tam FOV x max_range' paydasi frontier
+  // uretmiyordu. num_observed_voxels_normalized <= 0 ise eski davranis.
+  bool isFrontier(double num_unknown_voxels_normalized,
+                  double num_observed_voxels_normalized);
   // Convert points from body frame of robot to frame of this sensor
   void convertBodyToSensor(pcl::PointCloud<pcl::PointXYZ>::Ptr ep,
                            pcl::PointCloud<pcl::PointXYZ>::Ptr ep_s);
