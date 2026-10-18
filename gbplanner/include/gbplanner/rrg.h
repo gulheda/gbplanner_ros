@@ -360,6 +360,8 @@ class Rrg {
  private:
   bool sampleRandomState(StateVec& state);
   bool sampleVertex(Vertex& vertex);
+  // kesif_drone: hava araci icin dikey aciklik kontrolu (bkz. PlanningParams).
+  bool checkVerticalClearance(const StateVec& state);
   bool sampleVertex(RandomSampler& random_sampler, StateVec& root_state,
                     Vertex& vertex);
   double projectSample(Eigen::Vector3d& sample,

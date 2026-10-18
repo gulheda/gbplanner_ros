@@ -383,6 +383,39 @@ void Rrg::queryPtCallback(const geometry_msgs::PoseStamped& pose)
   convert(pose.pose, query_vec_);
 }
 
+bool Rrg::checkVerticalClearance(const StateVec& state) {
+  // kesif_drone: drone'u zemine indiren "asagi kayma"yi engeller. gbplanner'in
+  // kazanci dusuk noktalari odullendiriyor (sensor zemine yakin bandi ancak
+  // alcaktan gorur); bu kontrol ornek noktalari zemin ile tavan arasinda tutar.
+  if (robot_params_.type != RobotType::kAerialRobot) return true;
+  if (planning_params_.min_vertical_clearance <= 0.0) return true;
+  const double kMaxRay = 5.0;
+  Eigen::Vector3d p(state[0], state[1], state[2]);
+  p += robot_params_.center_offset;
+  auto dolu_mesafe = [&](double yon, bool& bilinmiyor) {
+    Eigen::Vector3d end_voxel;
+    double tsdf;
+    VoxelStatus vs = map_manager_->getRayStatus(
+        p, p + Eigen::Vector3d(0, 0, yon * kMaxRay), true, end_voxel, tsdf);
+    bilinmiyor = (vs == VoxelStatus::kUnknown);
+    if (vs == VoxelStatus::kOccupied || vs == VoxelStatus::kUnknown)
+      return std::abs(end_voxel[2] - p[2]);
+    return kMaxRay;
+  };
+  bool alt_bilinmiyor, ust_bilinmiyor;
+  double alt = dolu_mesafe(-1.0, alt_bilinmiyor);
+  double ust = dolu_mesafe(1.0, ust_bilinmiyor);
+  if (alt_bilinmiyor) {
+    // Altindaki zemin henuz gorulmedi: mevcut irtifanin altina inme.
+    return state[2] >= current_state_[2] - 0.2;
+  }
+  double gerekli = planning_params_.min_vertical_clearance;
+  if (!ust_bilinmiyor && ust < kMaxRay)
+    gerekli = std::max(gerekli,
+                       planning_params_.min_vertical_clearance_ratio * (alt + ust));
+  return alt >= gerekli;
+}
+
 bool Rrg::sampleVertex(Vertex& vertex) {
   StateVec state;
   bool hanging = false;
@@ -427,6 +460,10 @@ bool Rrg::sampleVertex(Vertex& vertex) {
       state[2] = sample[2];
     }
 
+    if (!checkVerticalClearance(state)) {
+      stat_->num_vertices_fail++;
+      continue;
+    }
     // Check if surrounding area is free.
     if (VoxelStatus::kFree ==
         map_manager_->getBoxStatus(
@@ -477,6 +514,10 @@ bool Rrg::sampleVertex(RandomSampler& random_sampler, StateVec& root_state,
       state[0] = sample[0];
       state[1] = sample[1];
       state[2] = sample[2];
+    }
+    if (!checkVerticalClearance(state)) {
+      stat_->num_vertices_fail++;
+      continue;
     }
     // Check if surrounding area is free.
     if (VoxelStatus::kFree ==

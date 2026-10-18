@@ -295,6 +295,12 @@ struct PlanningParams {
   double nearest_range_max;
   bool use_current_state;
   bool geofence_checking_enable;
+  // kesif_drone: hava araci icin dikey aciklik (0 = kapali, upstream davranis).
+  // Ornek noktanin altindaki engele (haritada DOLU) mesafe en az
+  // max(min_vertical_clearance, min_vertical_clearance_ratio * (alt + ust)) olmali;
+  // alti bilinmiyorsa nokta mevcut irtifanin altina inemez.
+  double min_vertical_clearance;
+  double min_vertical_clearance_ratio;
   // Ground robot specific
   double max_ground_height;
   double robot_height;

@@ -1156,6 +1156,18 @@ bool PlanningParams::loadParams(std::string ns) {
     ROSPARAM_WARN(param_name, leafs_only_for_volumetric_gain);
   }
 
+  param_name = ns + "/min_vertical_clearance";
+  if (!ros::param::get(param_name, min_vertical_clearance)) {
+    min_vertical_clearance = 0.0;
+    ROSPARAM_WARN(param_name, min_vertical_clearance);
+  }
+
+  param_name = ns + "/min_vertical_clearance_ratio";
+  if (!ros::param::get(param_name, min_vertical_clearance_ratio)) {
+    min_vertical_clearance_ratio = 0.0;
+    ROSPARAM_WARN(param_name, min_vertical_clearance_ratio);
+  }
+
   param_name = ns + "/max_ground_height";
   if (!ros::param::get(param_name, max_ground_height)) {
     max_ground_height = 1.2;
